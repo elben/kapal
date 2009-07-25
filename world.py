@@ -12,14 +12,14 @@ class World:
 
 class World2d(World):
     def __init__(self, costs=None, state_type=State2d, diags=False, diags_mult=1.42):
-        self.world = []
+        self.states = []
         self.costs = costs
         self.diags = diags
         self.diags_mult = diags_mult
 
         for r in range(len(costs)):
             world_l = []
-            self.world.append(world_l)
+            self.states.append(world_l)
             for c in range(len(costs[r])):
                 world_l.append(state_type(r, c))
 
@@ -45,7 +45,7 @@ class World2d(World):
                     continue
                 elif edge_count == 2:
                     cost *= self.diags_mult
-                succs.append((self.world[y][x], cost))
+                succs.append((self.states[y][x], cost))
         return succs
 
     def pred(self, s):
@@ -54,21 +54,27 @@ class World2d(World):
     def c(self, s1, s2):
         return costs[s2.y][s2.x]
 
+    def h(self, s1, s2):
+        return 0
+
     def change_c(self, s1, s2, c):
         if not self.in_bounds(s2.y, s2.x):
             return False
         self.costs[s2.y][s2.x] = c
         return True
 
+    def state(self, y, x):
+        return self.states[y][x]
+
     def in_bounds(self, y, x):
         size_y, size_x = self.size()
-        return y >= 0 and y < size_y and x >= 0 and size_x
+        return y >= 0 and y < size_y and x >= 0 and x < size_x
 
     def size(self, col = 0):
-        return (len(self.world), len(self.world[col]))
+        return (len(self.states), len(self.states[col]))
 
     def __str__(self):
         s = "World2d\n"
-        s += "y size: " + str(len(self.world)) + "\n"
-        s += "x size: " + str(len(self.world[0])) + "\n"
+        s += "y size: " + str(len(self.states)) + "\n"
+        s += "x size: " + str(len(self.states[0])) + "\n"
         return s
