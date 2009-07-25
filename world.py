@@ -1,13 +1,27 @@
 from state import *
+import math
 
 class World:
-    def succ(s):
+    """
+    World is the base class for all other world types.
+    This class shows the primitive functions that all other worlds
+    should implement.
+
+    An algorithm may assume that all the functions defined here are
+    implemented for any world.
+    """
+    def succ(self, s):
         pass
-    def pred(s):
+    def pred(self, s):
         pass
-    def c(s1, s2):
+    def c(self, s1, s2):
         pass
-    def change_c(s1, s2, c):
+    def h(self, s1, s2):
+        pass
+    def change_c(self, s1, s2, c):
+        pass
+    def reset(self):
+        """An algorithm may reset the world to 'start from scratch.'"""
         pass
 
 class World2d(World):
@@ -33,18 +47,16 @@ class World2d(World):
             y = s.y + i
             for j in range(-1, 2):
                 x = s.x + j 
-                if not self.in_bounds(y, x):
-                    # out of bounds
+                if not self.in_bounds(y, x):    # out of bounds
                     continue
-                if y == s.y and x == s.x:
-                    # self cannot be successor of self
+                if y == s.y and x == s.x:   # self cannot have self as neigh
                     continue
                 cost = self.costs[y][x]
                 edge_count = abs(i) + abs(j)
                 if edge_count == 2 and not self.diags:
-                    continue
+                    continue    # ignore diags if requested
                 elif edge_count == 2:
-                    cost *= self.diags_mult
+                    cost *= self.diags_mult     # diags allowed, so mult cost
                 succs.append((self.states[y][x], cost))
         return succs
 
@@ -55,13 +67,20 @@ class World2d(World):
         return costs[s2.y][s2.x]
 
     def h(self, s1, s2):
-        return 0
+        dy = abs(s2.y - s1.y)
+        dx = abs(s2.x - s1.x)
+        return math.sqrt(dx**2 + dy**2)
 
     def change_c(self, s1, s2, c):
         if not self.in_bounds(s2.y, s2.x):
             return False
         self.costs[s2.y][s2.x] = c
         return True
+
+    def reset(self):
+        for r in self.states:
+            for c in r:
+                c.reset()
 
     def state(self, y, x):
         return self.states[y][x]

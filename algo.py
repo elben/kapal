@@ -19,9 +19,12 @@ class AStar(Algo):
         Algo.__init__(self, world, start, goal)
         self.backwards = backwards
         self.open = []
-    def plan(self, generate=False):
-        # cannot replan properly after edge cost changes... must reset all g
-        # vals to inf first!
+
+    def plan(self):
+        list(self.generate_plan())
+
+    def generate_plan(self):
+        self.world.reset()      # forget previous search's g-vals
         goal = self.goal
         if self.backwards:
             self.goal.g = 0
@@ -32,29 +35,29 @@ class AStar(Algo):
             self.open = [self.start]
 
         s = None
+
+        # A*
         while s is not goal and len(self.open) > 0:
             s = heapq.heappop(self.open)
-            # print "pop :", str(s)
             for n, c in self.world.succ(s):
                 if n.g > s.g + c:
+                    # s improves n
                     n.g = s.g + c
-                    n.h = self.world.h(n, self.goal)
+                    n.h = self.h(n, self.goal)
                     n.bp = s
                     heapq.heappush(self.open, n)
-                    # print "push:", str(n)
-            if generate:
-                yield s
+            yield s
 
     def path(self):
+        # find path from goal to the first state with bp = None
         p = []
         s = self.goal
-        start = self.start
         if self.backwards:
             s = self.start
-            start = self.goal
-        while s is not start:
+        while s is not None:
             p.append(s)
-            s = s.bp
+            if s is not None:
+                s = s.bp
         return p
         
     def h(self, s1, s2):

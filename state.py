@@ -9,13 +9,16 @@ class State2d(State):
         return "(" + str(self.y) + ", " + str(self.x) + ")"
 
 class State2dAStar(State2d):
-    #inf = float('inf')
-    inf = 1e100
+    inf = 1e100 # = float('inf')
     def __init__(self, y=0, x=0, g=inf, h=0, bp=None):
         State2d.__init__(self, y, x)
         self.g = g
         self.h = h
         self.bp = bp
+    
+    def reset(self):
+        self.g = State2dAStar.inf
+
     def __cmp__(self, other):
         # TODO: allow any key function?
         # heapq library is a min heap

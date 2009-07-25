@@ -11,9 +11,10 @@ def main():
           [6, 7, 8],
           [9, 1, 2]]
     w = World2d(c, state_type = State2dAStar)
-    astar = AStar(w, w.state(0,0), w.state(1, 1))
+    astar = AStar(w, w.state(0,0), w.state(3, 2))
     astar.plan()
-    for s in astar.plan(generate=True):
+    path = astar.path()
+    for s in path:
         print s
 
 main()
