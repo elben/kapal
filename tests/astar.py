@@ -6,6 +6,7 @@ from world import *
 from state import *
 import tools
 import time
+import matplotlib.pyplot as plt
 
 def main():
     """
@@ -14,6 +15,8 @@ def main():
           [6, 7, 8],
           [9, 1, 2]]
     """
+    num_runs = 1
+
     width = 50
     max_width = 300
     x_axis = []
@@ -26,8 +29,9 @@ def main():
 
         astar = AStar(w, w.state(0,0), w.state(width-1, width-1))
         start_time = time.time()
-        astar.plan()
-        y_axis.append(time.time() - start_time)
+        for i in range(num_runs):
+            astar.plan()
+        y_axis.append((time.time() - start_time)/num_runs)
 
         path = astar.path()
         x_axis.append(width)
@@ -35,4 +39,8 @@ def main():
         width += 50
     print x_axis
     print y_axis
+    plt.plot(x_axis, y_axis)
+    plt.ylabel('time (s)')
+    plt.xlabel('world size (width and height)')
+    plt.show()
 main()
