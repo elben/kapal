@@ -21,28 +21,40 @@ class AStar(Algo):
         self.open = []
 
     def plan(self):
-        list(self.generate_plan())
+        """
+        Plans and returns the optimal path, from start to goal.
+        """
+        return list(self.plan_gen())
 
-    def generate_plan(self):
+    def plan_gen(self):
+        """
+        Plans the optimal path via a generator.
+
+        A generator that yields states as it is popped off
+        the open list, which is the optimal path in A* assuming
+        all assumptions regarding heuristics are held.
+        """
         self.world.reset()      # forget previous search's g-vals
         goal = self.goal
+        succ = self.world.succ  # successor function
+
         if self.backwards:
             self.goal.g = 0
             self.open = [self.goal]
             goal = self.start
+            succ = self.world.pred  # flip map edges
         else:
             self.start.g = 0
             self.open = [self.start]
 
-        s = None
-
         # A*
+        s = None
         while s is not goal and len(self.open) > 0:
             s = heapq.heappop(self.open)
-            for n, c in self.world.succ(s):
-                if n.g > s.g + c:
+            for n, cost in succ(s):
+                if n.g > s.g + cost:
                     # s improves n
-                    n.g = s.g + c
+                    n.g = s.g + cost
                     n.h = self.h(n, self.goal)
                     n.bp = s
                     heapq.heappush(self.open, n)
