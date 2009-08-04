@@ -1,10 +1,9 @@
 import sys
 import os
-sys.path.append(os.path.join(os.getcwd(), '..'))
-from algo import *
-from world import *
-from state import *
-import tools
+from kapal.algo import *
+from kapal.world import *
+from kapal.state import *
+import kapal.tools
 import time
 import matplotlib.pyplot as plt
 
