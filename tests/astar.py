@@ -18,7 +18,7 @@ def main():
     num_runs = 1
 
     width = 50
-    max_width = 300
+    max_width = 500
     x_axis = []
     y_axis = []
     while width < max_width:
