@@ -72,5 +72,15 @@ class AStar(Algo):
                 s = s.bp
         return p
         
-    def h(self, s1, s2):
-        return self.world.h(s1, s2)
+    def h(self, s1, s2, h_func=None):
+        """
+        Returns the heuristic value between s1 and s2.
+
+        Uses h_func, a user-defined heuristic function, if
+        h_func is passed in.
+        """
+        if h_func is None:
+            return self.world.h(s1, s2)
+        else:
+            return h_func(s1, s2)
+

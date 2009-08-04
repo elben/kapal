@@ -1,7 +1,8 @@
 # collection of random tools
 import random
+import kapal
 
-def rand_cost_map(y_size=1, x_size=1, min_val=1, max_val=1,
+def rand_cost_map(y_size=1, x_size=1, min_val=1, max_val=kapal.inf,
         flip=False, flip_chance=.1):
     map = []
     for i in range(y_size):
