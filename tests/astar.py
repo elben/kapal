@@ -5,7 +5,7 @@ from kapal.world import *
 from kapal.state import *
 import kapal.tools
 import time
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 def main():
     """
@@ -23,7 +23,7 @@ def main():
     while width < max_width:
         print width
 
-        c = tools.rand_cost_map(width, width, 1, 3, flip=True)
+        c = kapal.tools.rand_cost_map(width, width, 1, 3, flip=True)
         w = World2d(c, state_type = State2dAStar)
 
         astar = AStar(w, w.state(0,0), w.state(width-1, width-1))
@@ -38,8 +38,8 @@ def main():
         width += 50
     print x_axis
     print y_axis
-    plt.plot(x_axis, y_axis)
-    plt.ylabel('time (s)')
-    plt.xlabel('world size (width and height)')
-    plt.show()
+    #plt.plot(x_axis, y_axis)
+    #plt.ylabel('time (s)')
+    #plt.xlabel('world size (width and height)')
+    #plt.show()
 main()

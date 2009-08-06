@@ -1,6 +1,7 @@
 import heapq
 from state import *
 from world import *
+import sys
 
 class Algo:
     def __init__(self, world, start, goal):
@@ -55,7 +56,7 @@ class AStar(Algo):
                 if n.g > s.g + cost:
                     # s improves n
                     n.g = s.g + cost
-                    n.h = self.h(n, self.goal)
+                    n.h = self.h(n, goal)
                     n.bp = s
                     heapq.heappush(self.open, n)
             yield s

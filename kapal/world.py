@@ -1,5 +1,4 @@
 from state import *
-import math
 
 class World:
     """
@@ -67,9 +66,12 @@ class World2d(World):
         return costs[s2.y][s2.x]
 
     def h(self, s1, s2):
-        dy = abs(s2.y - s1.y)
-        dx = abs(s2.x - s1.x)
-        return math.sqrt(dx**2 + dy**2)
+        if self.diags:
+            dy = abs(s2.y - s1.y)
+            dx = abs(s2.x - s1.x)
+            return math.sqrt(dx**2 + dy**2)
+        else:
+            return abs(s2.y-s1.y) + abs(s2.x-s1.x)
 
     def change_c(self, s1, s2, c):
         if not self.in_bounds(s2.y, s2.x):
