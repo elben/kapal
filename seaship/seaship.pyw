@@ -10,6 +10,46 @@ import kapal.world
 import kapal.tools
 import copy
 
+class World2dCanvas(QWidget):
+    def __init__(self, parent=None, world=None, painter=None):
+        QtGui.QWidget.__init__(self, parent)
+        if world is None:
+            world = [[1]]
+        self.world = world
+
+        if painter is None:
+            painter = QtGui.QPainter()
+        self.painter = painter
+
+    def paintEvent(self, event):
+        self.draw_world2d(self.painter, self.world)
+        self.update()
+
+    def draw_world2d(self, painter, world,
+            x_start=0, y_start=0, x_goal=0, y_goal=0):
+        for r in range(len(world)):
+            for c in range(len(world[r])):
+                color = (0, 80, 255, 255)       # blue
+                if world[r][c] == -1:
+                    color = (255, 0, 0, 255)    # red
+                elif world[r][c] == -2:
+                    color = (0, 255, 0, 255)    # green
+                elif world[r][c] == kapal.inf:
+                    color = (0, 0, 128, 255)       # blue
+                self.draw_square(painter, c, r, color=color)
+
+    def draw_square(self, painter, x=0, y=0, color=(0, 0, 0, 0), size=32, brush=None):
+        if not painter.begin(self):
+            print "failed."
+            return
+        if brush is None:
+            brush = QtGui.QBrush(QtCore.Qt.SolidPattern)
+            r, g, b, a = color
+            brush.setColor(QtGui.QColor(r, g, b, a))
+        painter.setBrush(brush)
+        painter.drawRect(x*size, y*size, size, size)
+        painter.end()
+
 class SeashipMainWindow(QMainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
@@ -21,6 +61,11 @@ class SeashipMainWindow(QMainWindow):
         self.setGeometry(100, 100, 400, 400)
         self.setWindowTitle('Seaship')
         self.painter = QtGui.QPainter()
+        
+        self.worldcanvas = World2dCanvas(parent=self)
+        self.mainSplitter = QSplitter(Qt.Horizontal)
+        self.mainSplitter.addWidget(self.worldcanvas)
+        self.setCentralWidget(self.mainSplitter)
         
         # built tool bar
         # start button
@@ -46,12 +91,13 @@ class SeashipMainWindow(QMainWindow):
         self.connect(reset_button, QtCore.SIGNAL('triggered()'),
                 self.random_world)
 
-        self.statusBar()
-
         toolbar = self.addToolBar('Control')
         toolbar.addAction(start_button)
         toolbar.addAction(stop_button)
         toolbar.addAction(reset_button)
+
+        # status bar
+        self.statusBar()
 
     def random_world(self, width=10):
         # set up world
@@ -86,31 +132,8 @@ class SeashipMainWindow(QMainWindow):
             self.c2[s.y][s.x] = -2
 
     def paintEvent(self, event):
-        self.draw_world2d(self.painter, self.c2)
+        self.worldcanvas.world = copy.deepcopy(self.c2)
         self.update()
-
-    def draw_world2d(self, painter, world,
-            x_start=0, y_start=0, x_goal=0, y_goal=0):
-        for r in range(len(world)):
-            for c in range(len(world[r])):
-                color = (0, 80, 255, 255)       # blue
-                if world[r][c] == -1:
-                    color = (255, 0, 0, 255)    # red
-                elif world[r][c] == -2:
-                    color = (0, 255, 0, 255)    # green
-                elif world[r][c] == kapal.inf:
-                    color = (0, 0, 128, 255)       # blue
-                self.draw_square(painter, c, r, color=color)
-
-    def draw_square(self, painter, x=0, y=0, color=(0, 0, 0, 0), size=32, brush=None):
-        painter.begin(self)
-        if brush is None:
-            brush = QtGui.QBrush(QtCore.Qt.SolidPattern)
-            r, g, b, a = color
-            brush.setColor(QtGui.QColor(r, g, b, a))
-        painter.setBrush(brush)
-        painter.drawRect(x*size, y*size, size, size)
-        painter.end()
 
 app = QtGui.QApplication(sys.argv)
 seawin = SeashipMainWindow()
