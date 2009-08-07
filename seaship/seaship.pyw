@@ -14,26 +14,72 @@ class SeashipMainWindow(QMainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
 
+        # set up world
+        self.random_world(width=10)
+
+        # set up window
         self.setGeometry(100, 100, 400, 400)
         self.setWindowTitle('Seaship')
         self.painter = QtGui.QPainter()
         
-        # A* test
-        width = 10
+        # built tool bar
+        # start button
+        start_button = QtGui.QAction(QtGui.QIcon('icons/play.png'),
+                'Start', self)
+        start_button.setShortcut('Ctrl+R')
+        start_button.setStatusTip('Start Planning')
+        self.connect(start_button, QtCore.SIGNAL('triggered()'),
+                self.plan)
+
+        # stop button
+        stop_button = QtGui.QAction(QtGui.QIcon('icons/stop.png'),
+                'Start', self)
+        stop_button.setShortcut('Ctrl+T')
+        stop_button.setStatusTip('Stop')
+        self.connect(stop_button, QtCore.SIGNAL('triggered()'),
+                self.reset_world)
+
+        reset_button = QtGui.QAction(QtGui.QIcon('icons/reset.png'),
+                'Random', self)
+        reset_button.setShortcut('Ctrl+N')
+        reset_button.setStatusTip('Randomize World')
+        self.connect(reset_button, QtCore.SIGNAL('triggered()'),
+                self.random_world)
+
+        self.statusBar()
+
+        toolbar = self.addToolBar('Control')
+        toolbar.addAction(start_button)
+        toolbar.addAction(stop_button)
+        toolbar.addAction(reset_button)
+
+    def random_world(self, width=10):
+        # set up world
         self.c = kapal.tools.rand_cost_map(width, width, 1, kapal.inf,
-                flip=True, flip_chance=.0)
+                flip=True, flip_chance=.1)
         self.c2 = copy.deepcopy(self.c)
-        w = kapal.world.World2d(self.c, state_type = kapal.state.State2dAStar)
+        self.world = kapal.world.World2d(self.c, state_type = kapal.state.State2dAStar)
+
+    def reset_world(self):
+        self.c2 = copy.deepcopy(self.c)
+        self.world.reset()
+
+    def plan(self):
+        # A* test
+        def fake_h(s1, s2):
+            return 0
 
         start_y = 2
         start_x = 2
         goal_y = 8
-        goal_x = 4
-        astar = kapal.algo.AStar(w, w.state(start_y,start_x),
-                w.state(goal_y, goal_x))
+        goal_x = 8
+        astar = kapal.algo.AStar(self.world, self.world.state(start_y,start_x),
+                self.world.state(goal_y, goal_x))
+        #astar.h = fake_h
         num_popped = 0
         for s in astar.plan_gen():
-            self.c2[s.y][s.x] = -1
+            if self.c2[s.y][s.x] < kapal.inf:
+                self.c2[s.y][s.x] = -1
             num_popped += 1
         print num_popped
         for s in astar.path():
@@ -41,6 +87,7 @@ class SeashipMainWindow(QMainWindow):
 
     def paintEvent(self, event):
         self.draw_world2d(self.painter, self.c2)
+        self.update()
 
     def draw_world2d(self, painter, world,
             x_start=0, y_start=0, x_goal=0, y_goal=0):
