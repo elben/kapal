@@ -54,7 +54,10 @@ class SeashipMainWindow(QMainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
 
-        # set up world
+        # set up planner
+        self.algo_t = None
+        self.world_t = None
+        self.state_t = None
         self.random_world(width=10)
 
         # set up window
@@ -67,6 +70,10 @@ class SeashipMainWindow(QMainWindow):
         self.mainSplitter.addWidget(self.worldcanvas)
         self.setCentralWidget(self.mainSplitter)
         
+        # build algorithm chooser
+        algo_combo = QtGui.QComboBox()
+        algo_combo.addItem("A*")
+
         # built tool bar
         # start button
         start_button = QtGui.QAction(QtGui.QIcon('icons/play.png'),
