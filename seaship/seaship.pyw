@@ -51,13 +51,19 @@ class World2dCanvas(QWidget):
         painter.end()
 
 class SeashipMainWindow(QMainWindow):
+    algo_list = ["Dijkstra", "A*"]
+    heuristic_list = ["Manhattan", "Euclidean"]
+
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
 
+        # general settings
+        self.setUnifiedTitleAndToolBarOnMac(True)
+
         # set up planner
-        self.algo_t = None
-        self.world_t = None
-        self.state_t = None
+        self.algo_t = kapal.algo.Dijkstra
+        self.world_t = kapal.world.World2d
+        self.state_t = kapal.state.State2dAStar
         self.random_world(width=10)
 
         # set up window
@@ -72,15 +78,13 @@ class SeashipMainWindow(QMainWindow):
         
         # build algorithm chooser
         self.algo_combo = QtGui.QComboBox()
-        self.algo_combo.addItem("Dijkstra")
-        self.algo_combo.addItem("A*")
+        self.algo_combo.addItems(SeashipMainWindow.algo_list)
         self.connect(self.algo_combo, SIGNAL('currentIndexChanged(int)'),
                 self.update_algo)
 
         # random chooser
         heuristic_combo = QtGui.QComboBox()
-        heuristic_combo.addItem("Manhattan")
-        heuristic_combo.addItem("Euclidean")
+        heuristic_combo.addItems(SeashipMainWindow.heuristic_list)
 
         # algo settings
         settings_vbox = QtGui.QVBoxLayout()
@@ -131,9 +135,9 @@ class SeashipMainWindow(QMainWindow):
     def update_algo(self):
         print "algo updated to", self.algo_combo.currentIndex()
         if self.algo_combo.currentIndex() == 0:
-            self.algo = kapal.algo.AStar
+            self.algo_t = kapal.algo.Dijkstra
         if self.algo_combo.currentIndex() == 1:
-            self.algo = kapal.algo.AStar
+            self.algo_t = kapal.algo.AStar
 
     def random_world(self, width=10):
         # set up world
@@ -155,7 +159,7 @@ class SeashipMainWindow(QMainWindow):
         start_x = 2
         goal_y = 8
         goal_x = 8
-        astar = kapal.algo.AStar(self.world, self.world.state(start_y,start_x),
+        astar = self.algo_t(self.world, self.world.state(start_y,start_x),
                 self.world.state(goal_y, goal_x))
         #astar.h = fake_h
         num_popped = 0

@@ -85,3 +85,12 @@ class AStar(Algo):
         else:
             return h_func(s1, s2)
 
+class Dijkstra(AStar):
+    """
+    Classic Dijkstra search.
+
+    Oddly enough, easier to implement as a subclass of A*.
+    """
+    def h(self, s1, s2, h_func=None):
+        return 0
+
