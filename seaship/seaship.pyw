@@ -51,6 +51,7 @@ class World2dCanvas(QWidget):
         painter.end()
 
 class SeashipMainWindow(QMainWindow):
+    world_list = ["2d 4 neighbors", "2d 8 neighbors"]
     algo_list = ["Dijkstra", "A*"]
     heuristic_list = ["Manhattan", "Euclidean"]
 
@@ -76,23 +77,33 @@ class SeashipMainWindow(QMainWindow):
         self.mainSplitter = QSplitter(Qt.Horizontal)
         self.mainSplitter.addWidget(self.worldcanvas)
         
-        # build algorithm chooser
+        # world chooser
+        self.world_combo = QtGui.QComboBox()
+        self.world_combo.addItems(SeashipMainWindow.world_list)
+        self.world_combo.setItemIcon(0, QtGui.QIcon('icons/2d_4neigh.png'))
+        self.world_combo.setItemIcon(1, QtGui.QIcon('icons/2d_8neigh.png'))
+
+        # algorithm chooser
         self.algo_combo = QtGui.QComboBox()
         self.algo_combo.addItems(SeashipMainWindow.algo_list)
         self.connect(self.algo_combo, SIGNAL('currentIndexChanged(int)'),
                 self.update_algo)
 
-        # random chooser
-        heuristic_combo = QtGui.QComboBox()
-        heuristic_combo.addItems(SeashipMainWindow.heuristic_list)
+        # heuristic chooser
+        self.heuristic_combo = QtGui.QComboBox()
+        self.heuristic_combo.addItems(SeashipMainWindow.heuristic_list)
+        self.heuristic_combo.setItemIcon(0, QtGui.QIcon('icons/heur_manhattan.png'))
+        self.heuristic_combo.setItemIcon(1, QtGui.QIcon('icons/heur_euclidean.png'))
 
         # algo settings
         settings_vbox = QtGui.QVBoxLayout()
         settings_vbox.setAlignment(Qt.AlignTop|Qt.AlignHCenter)
+        settings_vbox.addWidget(QLabel("World"))
+        settings_vbox.addWidget(self.world_combo)
         settings_vbox.addWidget(QLabel("Algorithm"))
         settings_vbox.addWidget(self.algo_combo)
         settings_vbox.addWidget(QLabel("Heuristics"))
-        settings_vbox.addWidget(heuristic_combo)
+        settings_vbox.addWidget(self.heuristic_combo)
         settings_widget = QtGui.QWidget()
         settings_widget.setLayout(settings_vbox)
 
@@ -151,25 +162,23 @@ class SeashipMainWindow(QMainWindow):
         self.world.reset()
 
     def plan(self):
-        # A* test
-        def fake_h(s1, s2):
-            return 0
-
-        start_y = 2
-        start_x = 2
-        goal_y = 8
-        goal_x = 8
-        astar = self.algo_t(self.world, self.world.state(start_y,start_x),
-                self.world.state(goal_y, goal_x))
-        #astar.h = fake_h
-        num_popped = 0
-        for s in astar.plan_gen():
-            if self.c2[s.y][s.x] < kapal.inf:
-                self.c2[s.y][s.x] = -1
-            num_popped += 1
-        print num_popped
-        for s in astar.path():
-            self.c2[s.y][s.x] = -2
+        if (self.algo_t is kapal.algo.Dijkstra or
+                self.algo_t is kapal.algo.AStar):
+            start_y = 2
+            start_x = 2
+            goal_y = 8
+            goal_x = 8
+            astar = self.algo_t(self.world, self.world.state(start_y,start_x),
+                    self.world.state(goal_y, goal_x))
+            #astar.h = fake_h
+            num_popped = 0
+            for s in astar.plan_gen():
+                if self.c2[s.y][s.x] < kapal.inf:
+                    self.c2[s.y][s.x] = -1
+                num_popped += 1
+            print num_popped
+            for s in astar.path():
+                self.c2[s.y][s.x] = -2
 
     def paintEvent(self, event):
         self.worldcanvas.world = copy.deepcopy(self.c2)
