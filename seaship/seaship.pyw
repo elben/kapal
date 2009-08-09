@@ -58,7 +58,6 @@ class WorldCanvas(object):
         if not self.painter.begin(self):
             print "draw_line: self.painter failed to begin()."
             return
-
         if pen is None:
             pen = QtGui.QPen(QtCore.Qt.black, 2, QtCore.Qt.DashLine)
             pen.setColor(QtGui.QColor(*WorldCanvas.COLOR_GREEN))
@@ -70,11 +69,29 @@ class WorldCanvas(object):
                 y1*self.cell_size+padding, x2*self.cell_size+padding,
                 y2*self.cell_size+padding)
         self.painter.end()
+        
+    def draw_circle(self, x=0, y=0, radius=8, color=None):
+        if not self.painter.begin(self):
+            print "draw_circle: self.painter failed to begin()."
+            return
+        self.painter.setRenderHint(QPainter.Antialiasing)
+        
+        padding = self.cell_size/2
+        center = QtCore.QPointF(x*self.cell_size+padding,
+                y*self.cell_size+padding)
+
+        if color is None:
+            color = WorldCanvas.COLOR_YELLOW
+        brush = QtGui.QBrush(QtGui.QColor(*color))
+        self.painter.setBrush(brush)
+        self.painter.drawEllipse(center, radius, radius)
+        self.painter.end()
 
 class World2dCanvas(QWidget, WorldCanvas):
     def __init__(self, parent=None, world_cost=None, world_cond=None,
             painter=None):
         QtGui.QWidget.__init__(self, parent)
+        WorldCanvas.__init__(self)
 
         # cost of cells in the world
         if world_cost is None:
@@ -123,15 +140,20 @@ class World2dCanvas(QWidget, WorldCanvas):
                     c_prev = c
                     r_prev = r
 
+                # draw start point
+                if self.world_cond[r][c] & WorldCanvas.STATE_START:
+                    #ship_img = QtGui.QImage("icons/ship.png")
+                    #self.draw_image(ship_img, c, r)
+                    self.draw_circle(r, c, radius=12)
+                # draw goal points
+                if self.world_cond[r][c] & WorldCanvas.STATE_GOAL:
+                    self.draw_circle(r, c, radius=12,
+                            color=WorldCanvas.COLOR_GREEN)
+
                 if self.world_cond[r][c] & WorldCanvas.STATE_EXPANDED:
                     # current cell was expanded
                     self.draw_square(c, r, color=WorldCanvas.COLOR_RED,
                             size=8)
-
-                # draw ship and goal points
-                if self.world_cond[r][c] & WorldCanvas.STATE_START:
-                    ship_img = QtGui.QImage("icons/ship.png")
-                    self.draw_image(ship_img, c, r)
 
 class SeashipMainWindow(QMainWindow):
     world_list = ["2D 4 Neighbors", "2D 8 Neighbors"]
@@ -255,6 +277,7 @@ class SeashipMainWindow(QMainWindow):
             goal_y = 8
             goal_x = 8
             self.world_cond[start_y][start_x] |= WorldCanvas.STATE_START
+            self.world_cond[goal_y][goal_x] |= WorldCanvas.STATE_GOAL
             astar = self.algo_t(self.world, self.world.state(start_y,start_x),
                     self.world.state(goal_y, goal_x))
             #astar.h = fake_h
