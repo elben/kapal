@@ -164,6 +164,84 @@ class World2dCanvas(QWidget, WorldCanvas):
                     self.draw_square(c, r, color=WorldCanvas.COLOR_RED,
                             size=8)
 
+class World2dSettingsDock(QDockWidget):
+    """Settings for World2d."""
+
+    def __init__(self):
+        QDockWidget.__init__(self)
+
+        # world settings
+        size_y_box = QtGui.QSpinBox(self)
+        size_y_box.setMinimum(1)
+        size_x_box = QtGui.QSpinBox(self)
+        size_x_box.setMinimum(1)
+
+        # start/goal
+        start_y_box = QtGui.QSpinBox(self)
+        start_x_box = QtGui.QSpinBox(self)
+        goal_y_box = QtGui.QSpinBox(self)
+        goal_x_box = QtGui.QSpinBox(self)
+
+        vbox = QtGui.QVBoxLayout()
+        vbox.setAlignment(Qt.AlignTop|Qt.AlignLeft)
+        vbox.addWidget(QLabel("World Size"))
+        vbox.addWidget(size_y_box)
+        vbox.addWidget(size_x_box)
+
+        vbox.addWidget(QLabel("Start"))
+        vbox.addWidget(start_y_box)
+        vbox.addWidget(start_x_box)
+
+        vbox.addWidget(QLabel("Goal"))
+        vbox.addWidget(goal_y_box)
+        vbox.addWidget(goal_x_box)
+
+        widget = QtGui.QWidget()
+        widget.setLayout(vbox)
+        self.setWidget(widget)
+
+class MainSettingsDock(QDockWidget):
+    """Dock for choosing algorithm and world."""
+
+    world_list = ["2D 4 Neighbors", "2D 8 Neighbors"]
+    algo_list = ["Dijkstra", "A*"]
+    heuristic_list = ["Manhattan", "Euclidean"]
+
+    def __init__(self):
+        QDockWidget.__init__(self)
+
+        # world chooser
+        self.world_combo = QtGui.QComboBox()
+        self.world_combo.addItems(MainSettingsDock.world_list)
+        self.world_combo.setItemIcon(0, QtGui.QIcon('icons/2d_4neigh.png'))
+        self.world_combo.setItemIcon(1, QtGui.QIcon('icons/2d_8neigh.png'))
+
+        # algorithm chooser
+        self.algo_combo = QtGui.QComboBox()
+        self.algo_combo.addItems(MainSettingsDock.algo_list)
+        #self.connect(self.algo_combo, SIGNAL('currentIndexChanged(int)'),
+        #        self.update_algo)
+
+        # heuristic chooser
+        self.heuristic_combo = QtGui.QComboBox()
+        self.heuristic_combo.addItems(MainSettingsDock.heuristic_list)
+        self.heuristic_combo.setItemIcon(0, QtGui.QIcon('icons/heur_manhattan.png'))
+        self.heuristic_combo.setItemIcon(1, QtGui.QIcon('icons/heur_euclidean.png'))
+
+        # algo settings
+        vbox = QtGui.QVBoxLayout()
+        vbox.setAlignment(Qt.AlignTop|Qt.AlignHCenter)
+        vbox.addWidget(QLabel("World"))
+        vbox.addWidget(self.world_combo)
+        vbox.addWidget(QLabel("Algorithm"))
+        vbox.addWidget(self.algo_combo)
+        vbox.addWidget(QLabel("Heuristics"))
+        vbox.addWidget(self.heuristic_combo)
+
+        widget = QtGui.QWidget()
+        widget.setLayout(vbox)
+        self.setWidget(widget)
+        
 class SeashipMainWindow(QMainWindow):
     world_list = ["2D 4 Neighbors", "2D 8 Neighbors"]
     algo_list = ["Dijkstra", "A*"]
@@ -186,43 +264,15 @@ class SeashipMainWindow(QMainWindow):
         self.setWindowTitle('Seaship')
         self.painter = QtGui.QPainter()
 
+        # main settings dock
+        self.main_settings = MainSettingsDock()
+        self.world_settings = World2dSettingsDock()
+
         # world canvas
         self.worldcanvas = World2dCanvas(parent=self)
-        self.mainSplitter = QSplitter(Qt.Horizontal)
-        self.mainSplitter.addWidget(self.worldcanvas)
-        
-        # world chooser
-        self.world_combo = QtGui.QComboBox()
-        self.world_combo.addItems(SeashipMainWindow.world_list)
-        self.world_combo.setItemIcon(0, QtGui.QIcon('icons/2d_4neigh.png'))
-        self.world_combo.setItemIcon(1, QtGui.QIcon('icons/2d_8neigh.png'))
-
-        # algorithm chooser
-        self.algo_combo = QtGui.QComboBox()
-        self.algo_combo.addItems(SeashipMainWindow.algo_list)
-        self.connect(self.algo_combo, SIGNAL('currentIndexChanged(int)'),
-                self.update_algo)
-
-        # heuristic chooser
-        self.heuristic_combo = QtGui.QComboBox()
-        self.heuristic_combo.addItems(SeashipMainWindow.heuristic_list)
-        self.heuristic_combo.setItemIcon(0, QtGui.QIcon('icons/heur_manhattan.png'))
-        self.heuristic_combo.setItemIcon(1, QtGui.QIcon('icons/heur_euclidean.png'))
-
-        # algo settings
-        settings_vbox = QtGui.QVBoxLayout()
-        settings_vbox.setAlignment(Qt.AlignTop|Qt.AlignHCenter)
-        settings_vbox.addWidget(QLabel("World"))
-        settings_vbox.addWidget(self.world_combo)
-        settings_vbox.addWidget(QLabel("Algorithm"))
-        settings_vbox.addWidget(self.algo_combo)
-        settings_vbox.addWidget(QLabel("Heuristics"))
-        settings_vbox.addWidget(self.heuristic_combo)
-        settings_widget = QtGui.QWidget()
-        settings_widget.setLayout(settings_vbox)
-
-        self.mainSplitter.addWidget(settings_widget)
-        self.setCentralWidget(self.mainSplitter)
+        self.setCentralWidget(self.worldcanvas)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.main_settings)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.world_settings)
 
         # built tool bar
         # start button
