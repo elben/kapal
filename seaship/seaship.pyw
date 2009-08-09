@@ -14,9 +14,12 @@ class WorldCanvas(object):
     STATE_OPEN = 0x01
     STATE_CLOSED = 0x02
     STATE_EXPANDED = 0x04
+    STATE_START = 0x10
+    STATE_GOAL = 0x20
     STATE_PATH = 0x80
 
     COLOR_RED = (255, 0, 0, 255)
+    COLOR_REDTRAN = (255, 0, 0, 128)
     COLOR_BLUE = (0, 80, 255, 255)
     COLOR_DARKBLUE = (0, 0, 128, 255)
     COLOR_GREEN = (0, 255, 0, 255)
@@ -73,8 +76,21 @@ class World2dCanvas(QWidget, WorldCanvas):
                     self.draw_square(painter, c, r,
                         color=WorldCanvas.COLOR_RED, size=8)
 
+                # draw ship and goal points
+                if self.world_cond[r][c] & WorldCanvas.STATE_START:
+                    ship_img = QtGui.QImage("icons/ship.png")
+                    self.draw_image(painter, ship_img, c, r)
+
+    def draw_image(self, painter, image, x=0, y=0):
+        if not painter.begin(self):
+            print "draw_square: painter failed to begin()."
+            return
+        point = QtCore.QPoint(x*self.cell_size, y*self.cell_size)
+        painter.drawImage(point, image)
+        painter.end()
+
     def draw_square(self, painter, x=0, y=0, color=(0, 0, 0, 0),
-            size=None, brush=None):
+            size=None, brush=None, image=None):
         if not painter.begin(self):
             print "draw_square: painter failed to begin()."
             return
@@ -84,8 +100,9 @@ class World2dCanvas(QWidget, WorldCanvas):
             brush = QtGui.QBrush(QtCore.Qt.SolidPattern)
             r, g, b, a = color
             brush.setColor(QtGui.QColor(r, g, b, a))
-        padding = self.cell_size - size / 2
+        padding = (self.cell_size - size) / 2
         painter.setBrush(brush)
+        
         painter.drawRect(x*self.cell_size + padding, y*self.cell_size +
                 padding, size, size)
         painter.end()
@@ -211,18 +228,17 @@ class SeashipMainWindow(QMainWindow):
             start_x = 2
             goal_y = 8
             goal_x = 8
+            self.world_cond[start_y][start_x] |= WorldCanvas.STATE_START
             astar = self.algo_t(self.world, self.world.state(start_y,start_x),
                     self.world.state(goal_y, goal_x))
             #astar.h = fake_h
             num_popped = 0
             for s in astar.plan_gen():
-                cond = self.world_cond[s.y][s.x]
-                self.world_cond[s.y][s.x] = cond|WorldCanvas.STATE_EXPANDED
+                self.world_cond[s.y][s.x] |= WorldCanvas.STATE_EXPANDED
                 num_popped += 1
             print num_popped
             for s in astar.path():
-                cond = self.world_cond[s.y][s.x]
-                self.world_cond[s.y][s.x] = cond|WorldCanvas.STATE_PATH
+                self.world_cond[s.y][s.x] |= WorldCanvas.STATE_PATH
 
     def paintEvent(self, event):
         self.worldcanvas.world_cost = copy.deepcopy(self.c)
