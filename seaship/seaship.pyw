@@ -26,6 +26,51 @@ class WorldCanvas(object):
     COLOR_YELLOW = (255, 255, 0, 255)
     COLOR_TRANSPARENT = (0, 0, 0, 0)
 
+    def __init__(self):
+        self.painter = QtGui.QPainter()
+
+    def draw_image(self, image, x=0, y=0):
+        if not self.painter.begin(self):
+            print "draw_image: self.painter failed to begin()."
+            return
+        point = QtCore.QPoint(x*self.cell_size, y*self.cell_size)
+        self.painter.drawImage(point, image)
+        self.painter.end()
+
+    def draw_square(self, x=0, y=0, color=(0, 0, 0, 0),
+            size=None, brush=None, image=None):
+        if not self.painter.begin(self):
+            print "draw_square: self.painter failed to begin()."
+            return
+        if size is None:
+            size = self.cell_size
+        if brush is None:
+            brush = QtGui.QBrush(QtCore.Qt.SolidPattern)
+            brush.setColor(QtGui.QColor(*color))
+        padding = (self.cell_size - size) / 2
+        self.painter.setBrush(brush)
+        
+        self.painter.drawRect(x*self.cell_size + padding, y*self.cell_size +
+                padding, size, size)
+        self.painter.end()
+
+    def draw_line(self, x1=0, y1=0, x2=0, y2=0, pen=None):
+        if not self.painter.begin(self):
+            print "draw_line: self.painter failed to begin()."
+            return
+
+        if pen is None:
+            pen = QtGui.QPen(QtCore.Qt.black, 2, QtCore.Qt.DashLine)
+            pen.setColor(QtGui.QColor(*WorldCanvas.COLOR_GREEN))
+        self.painter.setPen(pen)
+
+        # padding inside cell
+        padding = self.cell_size/2
+        self.painter.drawLine(x1*self.cell_size+padding,
+                y1*self.cell_size+padding, x2*self.cell_size+padding,
+                y2*self.cell_size+padding)
+        self.painter.end()
+
 class World2dCanvas(QWidget, WorldCanvas):
     def __init__(self, parent=None, world_cost=None, world_cond=None,
             painter=None):
@@ -50,10 +95,10 @@ class World2dCanvas(QWidget, WorldCanvas):
         self.painter = painter
 
     def paintEvent(self, event):
-        self.draw_world2d(self.painter)
+        self.draw_world2d()
         self.update()
 
-    def draw_world2d(self, painter, x_start=0, y_start=0, x_goal=0,
+    def draw_world2d(self, x_start=0, y_start=0, x_goal=0,
             y_goal=0):
 
         # previous c, r values of the path, for drawing path lines
@@ -64,76 +109,29 @@ class World2dCanvas(QWidget, WorldCanvas):
             for c in range(len(self.world_cost[r])):
                 if self.world_cost[r][c] == kapal.inf:
                     # obstacle
-                    self.draw_square(painter, c, r,
-                            color=WorldCanvas.COLOR_DARKBLUE)
+                    self.draw_square(c, r, color=WorldCanvas.COLOR_DARKBLUE)
                 else:
                     # free space
-                    self.draw_square(painter, c, r,
-                            color=WorldCanvas.COLOR_BLUE)
+                    self.draw_square(c, r, color=WorldCanvas.COLOR_BLUE)
                 
                 # show state of cell
 
                 if self.world_cond[r][c] & WorldCanvas.STATE_PATH:
                     # current cell is part of path
-                    #self.draw_square(painter, c, r,
-                    #        color=WorldCanvas.COLOR_GREEN)
                     if c_prev != -1:
-                        self.draw_line(painter, c, r, c_prev, r_prev)
+                        self.draw_line(c, r, c_prev, r_prev)
                     c_prev = c
                     r_prev = r
 
                 if self.world_cond[r][c] & WorldCanvas.STATE_EXPANDED:
                     # current cell was expanded
-                    self.draw_square(painter, c, r,
-                        color=WorldCanvas.COLOR_RED, size=8)
+                    self.draw_square(c, r, color=WorldCanvas.COLOR_RED,
+                            size=8)
 
                 # draw ship and goal points
                 if self.world_cond[r][c] & WorldCanvas.STATE_START:
                     ship_img = QtGui.QImage("icons/ship.png")
-                    self.draw_image(painter, ship_img, c, r)
-
-    def draw_image(self, painter, image, x=0, y=0):
-        # TODO: rethink design, should be in WorldCanvas
-        if not painter.begin(self):
-            print "draw_square: painter failed to begin()."
-            return
-        point = QtCore.QPoint(x*self.cell_size, y*self.cell_size)
-        painter.drawImage(point, image)
-        painter.end()
-
-    def draw_square(self, painter, x=0, y=0, color=(0, 0, 0, 0),
-            size=None, brush=None, image=None):
-        # TODO: rethink design, should be in WorldCanvas
-        if not painter.begin(self):
-            print "draw_square: painter failed to begin()."
-            return
-        if size is None:
-            size = self.cell_size
-        if brush is None:
-            brush = QtGui.QBrush(QtCore.Qt.SolidPattern)
-            r, g, b, a = color
-            brush.setColor(QtGui.QColor(r, g, b, a))
-        padding = (self.cell_size - size) / 2
-        painter.setBrush(brush)
-        
-        painter.drawRect(x*self.cell_size + padding, y*self.cell_size +
-                padding, size, size)
-        painter.end()
-
-    def draw_line(self, painter, x1=0, y1=0, x2=0, y2=0):
-        if not painter.begin(self):
-            print "draw_square: painter failed to begin()."
-            return
-        padding = self.cell_size/2
-
-        pen = QtGui.QPen(QtCore.Qt.black, 2, QtCore.Qt.DashLine)
-        r, g, b, a = WorldCanvas.COLOR_GREEN
-        pen.setColor(QtGui.QColor(r, g, b, a))
-        painter.setPen(pen)
-        painter.drawLine(x1*self.cell_size+padding,
-                y1*self.cell_size+padding, x2*self.cell_size+padding,
-                y2*self.cell_size+padding)
-        painter.end()
+                    self.draw_image(ship_img, c, r)
 
 class SeashipMainWindow(QMainWindow):
     world_list = ["2D 4 Neighbors", "2D 8 Neighbors"]
