@@ -25,16 +25,16 @@ class World2dCanvas(QWidget):
         self.draw_world2d(self.painter, self.world)
         self.update()
 
-    def draw_world2d(self, painter, world,
+    def draw_world2d(self, painter, world_cost, world_cond,
             x_start=0, y_start=0, x_goal=0, y_goal=0):
-        for r in range(len(world)):
-            for c in range(len(world[r])):
+        for r in range(len(world_cost)):
+            for c in range(len(world_cost[r])):
                 color = (0, 80, 255, 255)       # blue
-                if world[r][c] == -1:
+                if world_cost[r][c] == -1:
                     color = (255, 0, 0, 255)    # red
-                elif world[r][c] == -2:
+                elif world_cost[r][c] == -2:
                     color = (0, 255, 0, 255)    # green
-                elif world[r][c] == kapal.inf:
+                elif world_cost[r][c] == kapal.inf:
                     color = (0, 0, 128, 255)       # blue
                 self.draw_square(painter, c, r, color=color)
 
@@ -51,9 +51,13 @@ class World2dCanvas(QWidget):
         painter.end()
 
 class SeashipMainWindow(QMainWindow):
-    world_list = ["2d 4 neighbors", "2d 8 neighbors"]
+    world_list = ["2D 4 Neighbors", "2D 8 Neighbors"]
     algo_list = ["Dijkstra", "A*"]
     heuristic_list = ["Manhattan", "Euclidean"]
+    
+    STATE_OPEN = 0x01
+    STATE_CLOSED = 0x02
+    STATE_PATH = 0x04
 
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
