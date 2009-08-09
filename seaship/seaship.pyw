@@ -28,33 +28,33 @@ class World2dCanvas(QWidget, WorldCanvas):
             painter=None):
         QtGui.QWidget.__init__(self, parent)
 
+        # cost of cells in the world
         if world_cost is None:
             self.world_cost = [[1]]
         self.world_cost = world_cost
 
+        # world_cond is a 2d grid, where each cell holds
+        # the condition of that cell
         if world_cond is None:
             self.world_cond = [[0]]
         self.world_cond = world_cond
+
+        # size of each world cell drawn
+        self.cell_size = 32
 
         if painter is None:
             painter = QtGui.QPainter()
         self.painter = painter
 
-        self.cell_size = 32
-
     def paintEvent(self, event):
         self.draw_world2d(self.painter)
         self.update()
 
-    def draw_world2d(self, painter, world_cost=None, world_cond=None,
-            x_start=0, y_start=0, x_goal=0, y_goal=0):
-        if world_cost is None:
-            world_cost = self.world_cost
-        if world_cond is None:
-            world_cond = self.world_cond
-        for r in range(len(world_cost)):
-            for c in range(len(world_cost[r])):
-                if world_cost[r][c] == kapal.inf:
+    def draw_world2d(self, painter, x_start=0, y_start=0, x_goal=0,
+            y_goal=0):
+        for r in range(len(self.world_cost)):
+            for c in range(len(self.world_cost[r])):
+                if self.world_cost[r][c] == kapal.inf:
                     # obstacle
                     self.draw_square(painter, c, r,
                             color=WorldCanvas.COLOR_DARKBLUE)
@@ -62,27 +62,16 @@ class World2dCanvas(QWidget, WorldCanvas):
                     # free space
                     self.draw_square(painter, c, r,
                             color=WorldCanvas.COLOR_BLUE)
-                if world_cond[r][c] & WorldCanvas.STATE_EXPANDED:
-                    # current cell was expanded
-                    self.draw_square(painter, c, r,
-                            color=WorldCanvas.COLOR_RED)
-                if world_cond[r][c] & WorldCanvas.STATE_PATH:
+                
+                # show state of cell
+                if self.world_cond[r][c] & WorldCanvas.STATE_PATH:
                     # current cell is part of path
                     self.draw_square(painter, c, r,
                             color=WorldCanvas.COLOR_GREEN)
-
-    def old_draw_world2d(self, painter, world_cost, world_cond,
-            x_start=0, y_start=0, x_goal=0, y_goal=0):
-        for r in range(len(world_cost)):
-            for c in range(len(world_cost[r])):
-                color = (0, 80, 255, 255)       # blue
-                if world_cost[r][c] == -1:
-                    color = (255, 0, 0, 255)    # red
-                elif world_cost[r][c] == -2:
-                    color = (0, 255, 0, 255)    # green
-                elif world_cost[r][c] == kapal.inf:
-                    color = (0, 0, 128, 255)       # blue
-                self.draw_square(painter, c, r, color=color)
+                if self.world_cond[r][c] & WorldCanvas.STATE_EXPANDED:
+                    # current cell was expanded
+                    self.draw_square(painter, c, r,
+                        color=WorldCanvas.COLOR_RED, size=8)
 
     def draw_square(self, painter, x=0, y=0, color=(0, 0, 0, 0),
             size=None, brush=None):
@@ -98,7 +87,7 @@ class World2dCanvas(QWidget, WorldCanvas):
         padding = self.cell_size - size / 2
         painter.setBrush(brush)
         painter.drawRect(x*self.cell_size + padding, y*self.cell_size +
-                padding, self.cell_size, self.cell_size)
+                padding, size, size)
         painter.end()
 
 class SeashipMainWindow(QMainWindow):
