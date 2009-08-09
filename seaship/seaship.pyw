@@ -55,6 +55,11 @@ class World2dCanvas(QWidget, WorldCanvas):
 
     def draw_world2d(self, painter, x_start=0, y_start=0, x_goal=0,
             y_goal=0):
+
+        # previous c, r values of the path, for drawing path lines
+        c_prev = -1
+        r_prev = -1
+
         for r in range(len(self.world_cost)):
             for c in range(len(self.world_cost[r])):
                 if self.world_cost[r][c] == kapal.inf:
@@ -67,10 +72,16 @@ class World2dCanvas(QWidget, WorldCanvas):
                             color=WorldCanvas.COLOR_BLUE)
                 
                 # show state of cell
+
                 if self.world_cond[r][c] & WorldCanvas.STATE_PATH:
                     # current cell is part of path
-                    self.draw_square(painter, c, r,
-                            color=WorldCanvas.COLOR_GREEN)
+                    #self.draw_square(painter, c, r,
+                    #        color=WorldCanvas.COLOR_GREEN)
+                    if c_prev != -1:
+                        self.draw_line(painter, c, r, c_prev, r_prev)
+                    c_prev = c
+                    r_prev = r
+
                 if self.world_cond[r][c] & WorldCanvas.STATE_EXPANDED:
                     # current cell was expanded
                     self.draw_square(painter, c, r,
@@ -82,6 +93,7 @@ class World2dCanvas(QWidget, WorldCanvas):
                     self.draw_image(painter, ship_img, c, r)
 
     def draw_image(self, painter, image, x=0, y=0):
+        # TODO: rethink design, should be in WorldCanvas
         if not painter.begin(self):
             print "draw_square: painter failed to begin()."
             return
@@ -91,6 +103,7 @@ class World2dCanvas(QWidget, WorldCanvas):
 
     def draw_square(self, painter, x=0, y=0, color=(0, 0, 0, 0),
             size=None, brush=None, image=None):
+        # TODO: rethink design, should be in WorldCanvas
         if not painter.begin(self):
             print "draw_square: painter failed to begin()."
             return
@@ -105,6 +118,21 @@ class World2dCanvas(QWidget, WorldCanvas):
         
         painter.drawRect(x*self.cell_size + padding, y*self.cell_size +
                 padding, size, size)
+        painter.end()
+
+    def draw_line(self, painter, x1=0, y1=0, x2=0, y2=0):
+        if not painter.begin(self):
+            print "draw_square: painter failed to begin()."
+            return
+        padding = self.cell_size/2
+
+        pen = QtGui.QPen(QtCore.Qt.black, 2, QtCore.Qt.DashLine)
+        r, g, b, a = WorldCanvas.COLOR_GREEN
+        pen.setColor(QtGui.QColor(r, g, b, a))
+        painter.setPen(pen)
+        painter.drawLine(x1*self.cell_size+padding,
+                y1*self.cell_size+padding, x2*self.cell_size+padding,
+                y2*self.cell_size+padding)
         painter.end()
 
 class SeashipMainWindow(QMainWindow):
