@@ -30,62 +30,71 @@ class WorldCanvas(object):
         self.painter = QtGui.QPainter()
 
     def draw_image(self, image, x=0, y=0):
-        if not self.painter.begin(self):
-            print "draw_image: self.painter failed to begin()."
-            return
         point = QtCore.QPoint(x*self.cell_size, y*self.cell_size)
-        self.painter.drawImage(point, image)
-        self.painter.end()
+
+        try:
+            if not self.painter.begin(self):
+                raise Exception("painter failed to begin().")
+            self.painter.drawImage(point, image)
+        finally:
+            self.painter.end()
 
     def draw_square(self, x=0, y=0, color=(0, 0, 0, 0),
             size=None, brush=None, image=None):
-        if not self.painter.begin(self):
-            print "draw_square: self.painter failed to begin()."
-            return
         if size is None:
             size = self.cell_size
         if brush is None:
             brush = QtGui.QBrush(QtCore.Qt.SolidPattern)
-            brush.setColor(QtGui.QColor(*color))
-        padding = (self.cell_size - size) / 2
-        self.painter.setBrush(brush)
-        
-        self.painter.drawRect(x*self.cell_size + padding, y*self.cell_size +
-                padding, size, size)
-        self.painter.end()
+        brush.setColor(QtGui.QColor(*color))
+
+        # to put square in center of cell
+        padding = (self.cell_size-size)/2
+
+        try:
+            if not self.painter.begin(self):
+                raise Exception("painter failed to begin().")
+            self.painter.setBrush(brush)
+            self.painter.drawRect(x*self.cell_size + padding, y*self.cell_size +
+                    padding, size, size)
+        finally:
+            self.painter.end()
 
     def draw_line(self, x1=0, y1=0, x2=0, y2=0, pen=None):
-        if not self.painter.begin(self):
-            print "draw_line: self.painter failed to begin()."
-            return
         if pen is None:
             pen = QtGui.QPen(QtCore.Qt.black, 2, QtCore.Qt.DashLine)
             pen.setColor(QtGui.QColor(*WorldCanvas.COLOR_GREEN))
-        self.painter.setPen(pen)
 
-        # padding inside cell
+        # to put line in center of cell
         padding = self.cell_size/2
-        self.painter.drawLine(x1*self.cell_size+padding,
-                y1*self.cell_size+padding, x2*self.cell_size+padding,
-                y2*self.cell_size+padding)
-        self.painter.end()
+
+        try:
+            if not self.painter.begin(self):
+                raise Exception("painter failed to begin().")
+            self.painter.setPen(pen)
+            self.painter.drawLine(x1*self.cell_size+padding,
+                    y1*self.cell_size+padding, x2*self.cell_size+padding,
+                    y2*self.cell_size+padding)
+        finally:
+            self.painter.end()
         
     def draw_circle(self, x=0, y=0, radius=8, color=None):
-        if not self.painter.begin(self):
-            print "draw_circle: self.painter failed to begin()."
-            return
-        self.painter.setRenderHint(QPainter.Antialiasing)
-        
+        if color is None:
+            color = WorldCanvas.COLOR_YELLOW
+        brush = QtGui.QBrush(QtGui.QColor(*color))
+
+        # to put circle in center of cell
         padding = self.cell_size/2
         center = QtCore.QPointF(x*self.cell_size+padding,
                 y*self.cell_size+padding)
 
-        if color is None:
-            color = WorldCanvas.COLOR_YELLOW
-        brush = QtGui.QBrush(QtGui.QColor(*color))
-        self.painter.setBrush(brush)
-        self.painter.drawEllipse(center, radius, radius)
-        self.painter.end()
+        try:
+            if not self.painter.begin(self):
+                raise Exception("painter failed to begin().")
+            self.painter.setBrush(brush)
+            self.painter.setRenderHint(QPainter.Antialiasing)
+            self.painter.drawEllipse(center, radius, radius)
+        finally:
+            self.painter.end()
 
 class World2dCanvas(QWidget, WorldCanvas):
     def __init__(self, parent=None, world_cost=None, world_cond=None,
