@@ -18,7 +18,7 @@ class WorldCanvas(object):
 
     COLOR_RED = (255, 0, 0, 255)
     COLOR_BLUE = (0, 80, 255, 255)
-    COLOR_DARKBLUE = (0, 80, 128, 255)
+    COLOR_DARKBLUE = (0, 0, 128, 255)
     COLOR_GREEN = (0, 255, 0, 255)
     COLOR_YELLOW = (255, 255, 0, 255)
     COLOR_TRANSPARENT = (0, 0, 0, 0)
@@ -43,31 +43,35 @@ class World2dCanvas(QWidget, WorldCanvas):
         self.cell_size = 32
 
     def paintEvent(self, event):
-        self.draw_world2d(self.painter, self.world_cost)
+        self.draw_world2d(self.painter)
         self.update()
 
-    def draw_world2d(self, painter,
-            world_cost=self.world_cost, world_cond=self.world_cond,
+    def draw_world2d(self, painter, world_cost=None, world_cond=None,
             x_start=0, y_start=0, x_goal=0, y_goal=0):
+        if world_cost is None:
+            world_cost = self.world_cost
+        if world_cond is None:
+            world_cond = self.world_cond
         for r in range(len(world_cost)):
             for c in range(len(world_cost[r])):
-                color = WorldCanvas.COLOR_BLUE
                 if world_cost[r][c] == kapal.inf:
+                    # obstacle
                     self.draw_square(painter, c, r,
                             color=WorldCanvas.COLOR_DARKBLUE)
-                else
+                else:
+                    # free space
                     self.draw_square(painter, c, r,
                             color=WorldCanvas.COLOR_BLUE)
-
+                if world_cond[r][c] & WorldCanvas.STATE_EXPANDED:
+                    # current cell was expanded
+                    self.draw_square(painter, c, r,
+                            color=WorldCanvas.COLOR_RED)
                 if world_cond[r][c] & WorldCanvas.STATE_PATH:
+                    # current cell is part of path
                     self.draw_square(painter, c, r,
                             color=WorldCanvas.COLOR_GREEN)
-                if world_cond[r][c] & WorldCanvas.STATE_EXPANDED:
-                    brush = QtGui.QBrush(QtCore.Qt.Dense1Pattern)
-                    brush.setColor(WorldCanvas.COLOR_TRANSPARENT)
-                    self.draw_square(painter, c, r, brush=brush)
 
-    def draw_world2d(self, painter, world_cost, world_cond,
+    def old_draw_world2d(self, painter, world_cost, world_cond,
             x_start=0, y_start=0, x_goal=0, y_goal=0):
         for r in range(len(world_cost)):
             for c in range(len(world_cost[r])):
@@ -81,10 +85,12 @@ class World2dCanvas(QWidget, WorldCanvas):
                 self.draw_square(painter, c, r, color=color)
 
     def draw_square(self, painter, x=0, y=0, color=(0, 0, 0, 0),
-            size=self.cell_size, brush=None):
+            size=None, brush=None):
         if not painter.begin(self):
             print "draw_square: painter failed to begin()."
             return
+        if size is None:
+            size = self.cell_size
         if brush is None:
             brush = QtGui.QBrush(QtCore.Qt.SolidPattern)
             r, g, b, a = color
@@ -194,16 +200,19 @@ class SeashipMainWindow(QMainWindow):
             self.algo_t = kapal.algo.Dijkstra
         if self.algo_combo.currentIndex() == 1:
             self.algo_t = kapal.algo.AStar
+        self.reset_world()
 
     def random_world(self, width=10):
         # set up world
+
+        # World2d
         self.c = kapal.tools.rand_cost_map(width, width, 1, kapal.inf,
                 flip=True, flip_chance=.1)
-        self.world_cond = copy.deepcopy(self.c)
+        self.world_cond = [ [0]*len(self.c[0]) for i in range(len(self.c)) ]
         self.world = kapal.world.World2d(self.c, state_type = kapal.state.State2dAStar)
 
     def reset_world(self):
-        self.world_cond = copy.deepcopy(self.c)
+        self.world_cond = [ [0]*len(self.c[0]) for i in range(len(self.c)) ]
         self.world.reset()
 
     def plan(self):
