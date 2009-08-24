@@ -170,33 +170,58 @@ class World2dSettingsDock(QDockWidget):
     def __init__(self):
         QDockWidget.__init__(self)
 
-        # world settings
+        # size boxes
         size_y_box = QtGui.QSpinBox(self)
         size_y_box.setMinimum(1)
         size_x_box = QtGui.QSpinBox(self)
         size_x_box.setMinimum(1)
 
-        # start/goal
+        # start/goal boxes
         start_y_box = QtGui.QSpinBox(self)
         start_x_box = QtGui.QSpinBox(self)
         goal_y_box = QtGui.QSpinBox(self)
         goal_x_box = QtGui.QSpinBox(self)
 
+        # main box layout
         vbox = QtGui.QVBoxLayout()
         vbox.setAlignment(Qt.AlignTop|Qt.AlignLeft)
+
+        temp_widget = QCheckBox("Randomize World")
+        temp_widget.setCheckState(Qt.Checked)
+        vbox.addWidget(temp_widget)
+        vbox.addWidget(QCheckBox("Traversable Obstacles"))
+        
         vbox.addWidget(QLabel("World Size"))
-        vbox.addWidget(size_y_box)
-        vbox.addWidget(size_x_box)
+        hbox_world_size = QtGui.QHBoxLayout()
+        hbox_world_size.addWidget(QLabel("Y"))
+        hbox_world_size.addWidget(size_y_box)
+        hbox_world_size.addWidget(QLabel("X"))
+        hbox_world_size.addWidget(size_x_box)
+        world_size_widget = QWidget()
+        world_size_widget.setLayout(hbox_world_size)
+        vbox.addWidget(world_size_widget)
 
         vbox.addWidget(QLabel("Start"))
-        vbox.addWidget(start_y_box)
-        vbox.addWidget(start_x_box)
+        hbox_start = QtGui.QHBoxLayout()
+        hbox_start.addWidget(QLabel("Y"))
+        hbox_start.addWidget(start_y_box)
+        hbox_start.addWidget(QLabel("X"))
+        hbox_start.addWidget(start_x_box)
+        start_widget = QtGui.QWidget()
+        start_widget.setLayout(hbox_start)
+        vbox.addWidget(start_widget)
 
         vbox.addWidget(QLabel("Goal"))
-        vbox.addWidget(goal_y_box)
-        vbox.addWidget(goal_x_box)
+        hbox_goal = QtGui.QHBoxLayout()
+        hbox_goal.addWidget(QLabel("Y"))
+        hbox_goal.addWidget(goal_y_box)
+        hbox_goal.addWidget(QLabel("X"))
+        hbox_goal.addWidget(goal_x_box)
+        goal_widget = QtGui.QWidget()
+        goal_widget.setLayout(hbox_goal)
+        vbox.addWidget(goal_widget)
 
-        widget = QtGui.QWidget()
+        widget = QtGui.QWidget(self)
         widget.setLayout(vbox)
         self.setWidget(widget)
 
