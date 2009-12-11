@@ -4,6 +4,11 @@ from world import *
 import sys
 
 class Algo:
+    """
+    A base class for algorithms.
+
+    All algorithms should inherit Algo and should overwrite Algo.plan.
+    """
     def __init__(self, world, start, goal):
         self.world = world
         self.start = start
@@ -14,6 +19,11 @@ class Algo:
 class AStar(Algo):
     """
     A* algorithm.
+
+    A* makes a couple of assumptions:
+        - non-negative edge weights
+        - heuristics function is consistent (and thus admissible)
+            - http://en.wikipedia.org/wiki/Consistent_heuristic
     """
 
     def __init__(self, world, start=None, goal=None, backwards=True):
@@ -25,15 +35,20 @@ class AStar(Algo):
         """
         Plans and returns the optimal path, from start to goal.
         """
-        return list(self.plan_gen())
+        return list(self.__plan_gen())
 
-    def plan_gen(self):
+    def __plan_gen(self):
         """
         Plans the optimal path via a generator.
 
         A generator that yields states as it is popped off
         the open list, which is the optimal path in A* assuming
         all assumptions regarding heuristics are held.
+
+        The user should not call AStar.__plan_gen. Call
+        AStar.plan instead. This is a generator for the sake of
+        easy debugging; it is usually unsafe to use the yielded
+        states as the path.
         """
         self.world.reset()      # forget previous search's g-vals
         goal = self.goal
@@ -62,7 +77,11 @@ class AStar(Algo):
             yield s
 
     def path(self):
-        # find path from goal to the first state with bp = None
+        """
+        Returns the path from goal to the first state with bp = None.
+
+        This method assumes that 
+        """
         p = []
         s = self.goal
         if self.backwards:
@@ -89,7 +108,8 @@ class Dijkstra(AStar):
     """
     Classic Dijkstra search.
 
-    Oddly enough, easier to implement as a subclass of A*.
+    Assumptions:
+        - non-negative edge weights
     """
     def h(self, s1, s2, h_func=None):
         return 0

@@ -10,20 +10,43 @@ class World:
     implemented for any world.
     """
     def succ(self, s):
+        """
+        Returns the successors of state s.
+        """
         pass
     def pred(self, s):
+        """
+        Returns the predecessors of state s.
+        """
         pass
     def c(self, s1, s2):
+        """
+        Returns the cost of moving from s1 to s2.
+        """
         pass
     def h(self, s1, s2):
+        """
+        Returns the heuristic cost of s1 to s2.
+        """
         pass
     def change_c(self, s1, s2, c):
+        """
+        Change the cost of moving from s1 to s2.
+        """
         pass
     def reset(self):
-        """An algorithm may reset the world to 'start from scratch.'"""
+        """
+        An algorithm may reset the world. That is, the world
+        forgets all previous knowledge and starts planning
+        'from scratch'.
+        """
         pass
 
 class World2d(World):
+    """
+    World2d is a tile-based 2-d world representation.
+    """
+
     def __init__(self, costs=None, state_type=State2d, diags=False, diags_mult=1.42):
         self.states = []
         self.costs = costs
