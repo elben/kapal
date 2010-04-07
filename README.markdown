@@ -1,6 +1,17 @@
 # Kapal #
 
-Thanks for downloading kapal!
+Kapal is an open source path-planning library written in Python. Its
+intended use is algorithms research and navigation tasks in games and
+robotics. 
+
+## Downloading ##
+
+You can download kapal
+[here](http://github.com/eshira/kapal/archives/master).
+
+Or you can use git:
+
+    $ git clone http://github.com/eshira/kapal.git
 
 ## Installing ##
 
